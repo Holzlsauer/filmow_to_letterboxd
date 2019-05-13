@@ -1,10 +1,11 @@
-import os
+from bs4 import BeautifulSoup
 import csv
-import string
+import os
 import requests
 import re
+import string
+import sys
 import webbrowser
-from bs4 import BeautifulSoup
 
 class Parser():
   def __init__(self, user):
@@ -70,6 +71,7 @@ class Parser():
 
   def write_to_csv(self, movie):
     if self.movies_parsed < 1900:
+      self.write_to_txt(movie['title'])
       with open(str(self.total_files) + self.user + '.csv', 'a', encoding='UTF-8') as f:
         writer = csv.writer(f)
         writer.writerow((
@@ -81,6 +83,10 @@ class Parser():
       self.total_files += 1
       self.movies_parsed = 0
       self.create_csv(self.total_files)
+  
+  def write_to_txt(self, movie):
+    with open(os.getcwd() + os.sep + 'current_movie.txt', 'w', encoding='UTF-8') as f:
+      f.write(str(movie.rstrip('\n') + ','))
       
   def get_last_page(self, user):
     url = 'https://filmow.com/usuario/'+ user + '/filmes/ja-vi/'
@@ -96,34 +102,7 @@ class Parser():
     except:
       return 1
 
+print('aaa')
 if __name__ == "__main__":
-  try:
-    username = input('Digite seu nome de usuário do Filmow: ')
-    msg = """
-          Seus filmes estão sendo importados no plano de fundo :)\n
-          Não feche a janela e aguarde um momento.
-          """
-    print(msg)
-    Parser(username.lower().strip())
-  except Exception:
-    print('Usuário {} não encontrado. Tem certeza que digitou certo?'.format(username))
-    username = input('Digite seu nome de usuário do Filmow: ')
-    Parser(username.lower().strip())
-
-  msg = """
-          Pronto!
-          Vá para https://letterboxd.com/import/, SELECT A FILE, 
-          e selecione o(s) arquivo(s) de extensão csv criado(s) pelo programa
-        """
-  print(msg)
-
-  go_to_letterboxd = input('Gostaria de ser direcionado para "https://letterboxd.com/import/"? (s/n) ')
-
-  if go_to_letterboxd.startswith('s'):
-    webbrowser.open('https://letterboxd.com/import/')
-  elif go_to_letterboxd.startswith('n'):
-    print('Então tchau')
-    input()
-  else:
-    print('Entendi não, mas tchau')
-    input()
+  if len(sys.argv) > 1:
+    Parser(sys.argv[1])
